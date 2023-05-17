@@ -74,12 +74,12 @@ for i in range(0, 1000):
     plt.scatter(x, y, c = "black")
     plt.xticks([])
     plt.yticks([])
-    plt.savefig(absolute_path + '/relation/' + str(i) + '.jpg')
+    plt.savefig(absolute_path + '/scatter_plots/relation/' + str(i) + '.jpg')
     plt.clf()
     
     plt.scatter(x, y_np, c = "black")
     plt.xticks([])
     plt.yticks([])
-    plt.savefig(absolute_path + '/no_relation/' + str(i) + '.jpg')
+    plt.savefig(absolute_path + '/scatter_plots/no_relation/' + str(i) + '.jpg')
     plt.clf()
     
