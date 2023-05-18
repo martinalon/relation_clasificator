@@ -7,8 +7,8 @@ import os
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 import random as rn
-
-
+from image_processing import obtener_extension_archivos, construir_base_datos, train_validation_test_sets
+from tensorflow import keras
 
 
 Imagenes=[]
@@ -19,114 +19,69 @@ DIR_no_relation = DIR_BASE+'/scatter_plots/no_relation'
 DIR_relation = DIR_BASE+'/scatter_plots/relation'
 
 
-
-
-def obtener_extension_archivos(DIR):
-    """
-    This function allow us to know the extensions
-    of all files in one directory.
-    Parameters.
-    DIR: The Directory path that contain all documents
-    
-    Return.
-    A dictionary with the different extensions into the
-    directory.
-    """
-    ext=[]
-    for archivo in os.listdir(DIR):
-        nom_archivo, ext_archivo = os.path.splitext(archivo)
-        ext.append(ext_archivo)
-    extensiones=set(ext)
-    return(extensiones)
-
-
-def imagen_valida(archivo,extensiones=[".jpg"]): # Note, the format is .jpg by defoult
-    """
-    This function has two purposes:
-    1.- See if the file exists
-    2.- Check if the extension is inte the allowed
-    If the two conditions above are fulfilled, then the
-    function returns True, and False otherwise
-    
-    Parameters.
-    archivo: The file pathe to the file
-    extensiones: A list with the estensions allowed
-    """
-    nom_archivo, ext_archivo = os.path.splitext(archivo)
-    es_archivo = os.path.isfile(archivo)
-    es_imagen = ext_archivo.lower() in extensiones
-    return(es_archivo and es_imagen)
-
-
-def construir_base_datos(Imagenes_list, Etiquetas_list, etiqueta, DIR, color_mode, IMG_TAM):
-    """
-    This function uses the function imagen_valida(ruta) to see if a file exist and if its
-    extension is valid. It the function give us a True, then the file is processed as follows
-    
-    1.- Loads the image (file) into PIL format.
-    2.- The PIL format is converted into an array
-    3.- The array is normalized and resized by the [IMG_TAM].
-    4.- Finally it is converted into a numpy.array
-    
-    Each valid file is processed as above ant stored in a list named Imagenes and the corresponding
-    tag is also stored in a list named Etiquetas.
-    
-    Parameters.
-    Imagenes_list: This is the list that will stored each file after processing
-    Etiquetas_list: This is the list that will stored each label after processing
-    etiqueta: This is the label corrsponding to the Directory loaded with the files
-    DIR: The directory path with the files
-    color_mode: This is the color mode of the imagenes could be one of "grayscale", "rgb" and "rgba"
-    IMG_TAM: This is the new size for the imagenes
-    
-    """
-    Imagenes = Imagenes_list
-    Etiquetas = Etiquetas_list
-    for archivo in tqdm(os.listdir(DIR)):
-        ruta = os.path.join(DIR,archivo)
-        if imagen_valida(ruta):
-            img = tf.keras.preprocessing.image.load_img(ruta,color_mode=color_mode)
-            matriz_img = tf.keras.preprocessing.image.img_to_array(img)
-            matriz_img = tf.image.resize(matriz_img/255,[IMG_TAM,IMG_TAM])
-            Imagenes.append(matriz_img.numpy())                                # Esta lista se define al inicio
-            Etiquetas.append(etiqueta)
-    return(Imagenes, Etiquetas)
-
 Imagenes, Etiquetas = construir_base_datos([], [], 0, DIR_no_relation, "grayscale", IMG_TAM)
 Imagenes, Etiquetas = construir_base_datos(Imagenes, Etiquetas, 1, DIR_relation, "grayscale", IMG_TAM)
-
-
 clases=["No Relation", "Relation"]
-fig,ax=plt.subplots(4,4)
-fig.set_size_inches(10,10)
-for i in range(4):
-    for j in range (4):
-        l=rn.randint(0,len(Etiquetas))
-        ax[i,j].imshow(Imagenes[l])
-        ax[i,j].set_title('Clase: '+ clases[Etiquetas[l]])        
-plt.tight_layout()
-plt.show()
+
+
+img_train, etq_train, img_val, etq_val, img_test, etq_test = train_validation_test_sets(Imagenes, Etiquetas, 0.05, 0.05)
+
+print(len(etq_train))
+print(len(etq_val))
+print(len(etq_test))
+
+
+#
+datagen = tf.keras.preprocessing.image.ImageDataGenerator(
+            rotation_range=0,  # rotación aleatoria de la imágenes en un rango de (0 a 30)
+            zoom_range = 0.05, # acercamiento aleatorio dentro de la imagen
+            width_shift_range=0,  # desplazamiento  horizontal aleatorio
+            height_shift_range=0,  # desplazamiento vertical aleatorio
+            horizontal_flip=True,  # volteo horizontal de las imágenes
+            vertical_flip=True,  # volteo vertical de las imágenes
+            channel_shift_range=0.5   #modificación aleatorio de los valores RGB de la imagen
+            )
+
+
+redConv1 = tf.keras.Sequential([
+  tf.keras.layers.Conv2D(6, (5,5),activation='relu',padding='Same', input_shape = (150,150,1)),  
+  tf.keras.layers.MaxPooling2D((2,2)),  
+  tf.keras.layers.Conv2D(9,(3,3),activation='relu',padding='Same'),  
+  tf.keras.layers.MaxPooling2D((2,2)), 
+  tf.keras.layers.Conv2D(18,(3,3),activation='relu',padding='Same'),  
+  tf.keras.layers.MaxPooling2D((2,2)),  
+  tf.keras.layers.Conv2D(36,(3,3),activation='relu',padding='Same'),  
+  tf.keras.layers.MaxPooling2D((2,2)), 
+  tf.keras.layers.Flatten(),
+  tf.keras.layers.Dense(1000, activation = "relu"),
+  tf.keras.layers.Dense(100, activation="relu"),
+  tf.keras.layers.Dense(50, activation="relu"),
+  tf.keras.layers.Dense(2,activation='relu')
+  ])
+print(redConv1.summary())
+
+opt = keras.optimizers.Adam(learning_rate=0.0000005)
+redConv1.compile(optimizer=opt,loss='sparse_categorical_crossentropy',metrics=['accuracy'])
+evolucion = redConv1.fit(datagen.flow(img_train, etq_train, batch_size=200),validation_data=(img_val, etq_val,), epochs=400, batch_size=200)
+
+
+plt.figure(figsize=(10, 10))
+plt.subplot(1, 2, 1)
+plt.plot(evolucion.history['loss'])
+plt.plot(evolucion.history['val_loss'])
+plt.title('Modelo hecho desde cero')
+plt.ylabel('Perdida')
+plt.xlabel('Epocas')
+plt.legend(['entrenamiento', 'prueba'])
+
+plt.subplot(1, 2, 2)
+plt.plot(evolucion.history['accuracy'])
+plt.plot(evolucion.history['val_accuracy'])
+plt.title('Modelo hecho desde cero')
+plt.ylabel('Exactitud')
+plt.xlabel('Epocas')
+plt.legend(['entrenamiento', 'prueba'])
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+redConv1.save("model2.h5")
