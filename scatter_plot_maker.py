@@ -3,6 +3,7 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from tqdm import tqdm
 
 absolute_path = os.path.abspath(os.path.dirname(__file__))
 
@@ -66,7 +67,7 @@ def y_no_relation(x):
 
 
 
-for i in range(0, 1000):
+for i in tqdm(range(0, 1000)):
     x = np.random.uniform(low=0.001, high=10, size=(200,))
     y = y_functions(x)
     y_np = y_no_relation(x)
@@ -74,12 +75,12 @@ for i in range(0, 1000):
     plt.scatter(x, y, c = "black")
     plt.xticks([])
     plt.yticks([])
-    plt.savefig(absolute_path + '/scatter_plots/relation/' + str(i) + '.jpg')
+    plt.savefig(absolute_path + '/scatter_plots/alternative_test/relation/' + str(i) + '.jpg')
     plt.clf()
     
     plt.scatter(x, y_np, c = "black")
     plt.xticks([])
     plt.yticks([])
-    plt.savefig(absolute_path + '/scatter_plots/no_relation/' + str(i) + '.jpg')
+    plt.savefig(absolute_path + '/scatter_plots/alternative_test/no_relation/' + str(i) + '.jpg')
     plt.clf()
     

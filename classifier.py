@@ -61,7 +61,7 @@ redConv1 = tf.keras.Sequential([
 print(redConv1.summary())
 
 opt = keras.optimizers.Adam(learning_rate=0.0000005)
-redConv1.compile(optimizer=opt,loss='sparse_categorical_crossentropy',metrics=['accuracy'])
+redConv1.compile(optimizer=opt,loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 evolucion = redConv1.fit(datagen.flow(img_train, etq_train, batch_size=200),validation_data=(img_val, etq_val,), epochs=400, batch_size=200)
 
 
@@ -83,5 +83,20 @@ plt.xlabel('Epocas')
 plt.legend(['entrenamiento', 'prueba'])
 
 
-
 redConv1.save("model2.h5")
+
+my_model = tf.keras.models.load_model('model2.h5')
+tasa_aprendizaje_base = 0.0000005
+my_model.compile(optimizer=tf.keras.optimizers.RMSprop(learning_rate=tasa_aprendizaje_base), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+
+perdida_prueba_pre_entrenado, exactitud_prueba_pre_entrenado =  my_model.evaluate(
+                                                                                      x=img_prueba,
+                                                                                      y = etq_prueba,
+                                                                                      batch_size=200,
+                                                                                      verbose=1)
+
+print(perdida_prueba_pre_entrenado, exactitud_prueba_pre_entrenado)
+
+
+
+
