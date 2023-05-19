@@ -84,7 +84,7 @@ plt.legend(['entrenamiento', 'prueba'])
 #saving the neural network
 redConv1.save("model2.h5")
 
-#importing the model again to realice  the test. see also the alternative_test.py
+#importing the model again to make  the test. see also the alternative_test.py
 my_model = tf.keras.models.load_model('model2.h5')
 tasa_aprendizaje_base = 0.0000005
 my_model.compile(optimizer=tf.keras.optimizers.RMSprop(learning_rate=tasa_aprendizaje_base), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
