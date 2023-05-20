@@ -56,14 +56,32 @@ def y_no_relation(x):
     and define an array wit the same lenght
     that x.
     """
-    
-    y = np.random.normal(loc=0.0, scale=1.0, size=len(x))
+    list1 = [*range(0, 4)]
+    n = random.choice(list1)
+    if n == 0:
+        y = np.random.normal(loc=0.0, scale=1.0, size=len(x))
+    elif n == 1:
+        y1 = np.random.normal(loc=0.0, scale=.45, size=len(x))
+        y2 = 3 + np.random.normal(loc=0.0, scale=.45, size=len(x))
+        y = np.concatenate((y1, y2), axis=0)
+        y = np.random.choice(y, size=len(x), replace=False)
+    elif n == 2:
+        y1 = np.random.normal(loc=0.0, scale=.45, size=len(x))
+        y2 = 3 + np.random.normal(loc=0.0, scale=.45, size=len(x))
+        y3 = 6 + np.random.normal(loc=0.0, scale=.45, size=len(x))
+        y = np.concatenate((y1, y2), axis=0)
+        y = np.concatenate((y, y3), axis=0)
+        y = np.random.choice(y, size=len(x), replace=False)
+    else:
+        y1 = np.random.normal(loc=0.0, scale=.45, size=len(x))
+        y2 = 3 + np.random.normal(loc=0.0, scale=.45, size=len(x))
+        y3 = 6 + np.random.normal(loc=0.0, scale=.45, size=len(x))
+        y4 = 9 + np.random.normal(loc=0.0, scale=.45, size=len(x))
+        y = np.concatenate((y1, y2), axis=0)
+        y = np.concatenate((y, y3), axis=0)
+        y = np.concatenate((y, y4), axis=0)
+        y = np.random.choice(y, size=len(x), replace=False)
     return(y)
-
-
-
-
-
 
 
 
@@ -83,4 +101,4 @@ for i in tqdm(range(0, 1000)):
     plt.yticks([])
     plt.savefig(absolute_path + '/scatter_plots/alternative_test/no_relation/' + str(i) + '.jpg')
     plt.clf()
-    
+   
