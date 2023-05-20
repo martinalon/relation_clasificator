@@ -52,15 +52,15 @@ redConv1 = tf.keras.Sequential([
   tf.keras.layers.Dense(1000, activation = "relu"),
   tf.keras.layers.Dense(100, activation="relu"),
   tf.keras.layers.Dense(50, activation="relu"),
-  tf.keras.layers.Dense(2,activation='relu')
+  tf.keras.layers.Dense(2, activation='softmax')
   ])
 
 #print(redConv1.summary())
 
 # Defining the parameters for the training and starting it 
-opt = keras.optimizers.Adam(learning_rate=0.0000005)
+opt = keras.optimizers.Adam(learning_rate=0.000001)
 redConv1.compile(optimizer=opt,loss='sparse_categorical_crossentropy', metrics=['accuracy'])
-evolucion = redConv1.fit(datagen.flow(img_train, etq_train, batch_size=200),validation_data=(img_val, etq_val,), epochs=400, batch_size=200)
+evolucion = redConv1.fit(datagen.flow(img_train, etq_train, batch_size=200),validation_data=(img_val, etq_val,), epochs=500, batch_size=200)
 
 
 # ploting the ovolution of the loss and accuracy functions
@@ -80,20 +80,23 @@ plt.title('Modelo hecho desde cero')
 plt.ylabel('Exactitud')
 plt.xlabel('Epocas')
 plt.legend(['entrenamiento', 'prueba'])
+plt.show()
+
 
 #saving the neural network
 redConv1.save("model2.h5")
 
+
 #importing the model again to make  the test. see also the alternative_test.py
 my_model = tf.keras.models.load_model('model2.h5')
-tasa_aprendizaje_base = 0.0000005
+tasa_aprendizaje_base = 0.000001
 my_model.compile(optimizer=tf.keras.optimizers.RMSprop(learning_rate=tasa_aprendizaje_base), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
 perdida_prueba_pre_entrenado, exactitud_prueba_pre_entrenado =  my_model.evaluate(
-                                                                                      x=img_prueba,
-                                                                                      y = etq_prueba,
-                                                                                      batch_size=200,
-                                                                                      verbose=1)
+                                                                                  x=img_test,
+                                                                                  y = etq_test,
+                                                                                  batch_size=200,
+                                                                                  verbose=1)
 #printing the results
 print(perdida_prueba_pre_entrenado, exactitud_prueba_pre_entrenado)
 
